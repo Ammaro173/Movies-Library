@@ -9,7 +9,8 @@
 
 
 ## Overview
-
+- task11 30/1/2022
+- task12 31/1/2022: Added over the HomeRoot and FavouriteRoot ; the Search,genre,regions,trending; Roots!! + Adding 500 status Error!!
 ## Getting Started
 1. //framework , backend server side framework  (express).
 2. //package , send & recieve   (cors).

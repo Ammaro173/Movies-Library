@@ -14,7 +14,8 @@ const express = require('express'); //framework , backend server side framework
 // eslint-disable-next-line no-undef
 const cors = require('cors'); //package , send & recieve
 // eslint-disable-next-line no-undef
-const movieData = require('./Movie Data/data.json'); // add te path of the file of Json file
+// eslint-disable-next-line no-unused-vars
+const movieData = require('./Movie Data/data.json'); // add te path of the file of Json file //Task 11 // no longer needed!!
 // eslint-disable-next-line no-undef
 const { default: axios } = require('axios');
 /////////////////////////// endpoints // server fir food recipes ///its taken from API!!! thats why we didnt take it directly +API is away to take request and give response (also translates on his own)
@@ -24,12 +25,28 @@ const PORT = process.env.PORT;
 const app = express(); // to start using express  app or server! its just a name
 app.use(cors()); // use method
 
+app.use(express.json()); // to parse (parseInt (stringS!!)) the body content to JSON Format //New!!
+// var bodyParser = require('body-parser');
+// var jsonParser = bodyParser.json();
+
+const pg = require('pg'); // use pg library!!
+
+const client = new pg.Client(process.env.DATABASE_URL); // Cient or db(DataBase)
+// const client = new pg.Client({
+//   connectionString: 'postgres://ammaro:0000@localhost:5432/movies',
+//   ssl: { rejectUnauthorized: false },
+// });
+
 app.get('/', homePageHandler); //  / is the root or the home page // HellowWorldHandler is a fucntion! has 2 argum,ents a request and response , if home page is pushed fucntion will run
 app.get('/Favorite', favouritePageHandler); // get request
 app.get('/trending', trendingPageHandler);
 app.get('/regions', regionsHandler);
 app.get('/search', searchHandler);
 app.get('/genre', genreHandler);
+
+app.post('/addmovie', addMovieHandler); //task13
+app.get('/getMovies', getMoviesHandler); // Task 13
+
 app.get('*', notFoundHandler); //anything except 2 above things ,show not found handler function
 app.use(errorHandler); // use not get in case of any server errors!!
 
@@ -76,8 +93,9 @@ function homePageHandler(req, res) {
 
   // WILL GET THE DATA FROM THE URL !! DONT FORGET THE TIME
 
-  let obj = new Favourite(movieData.id, movieData.title, movieData.release_date, movieData.poster_path, movieData.overview); // still no need for looping with .map or for loop because we had only 1 object!! letmemes=memes.data.map()
-  return res.status(200).json(obj); // response with status 200 (means everything is ok) , and send json obj
+  // let obj = new Favourite(movieData.id, movieData.title, movieData.release_date, movieData.poster_path, movieData.overview); // still no need for looping with .map or for loop because we had only 1 object!! letmemes=memes.data.map()
+
+  return res.status(200).send('welcome to home page'); // response with status 200 (means everything is ok) , and send json obj
 }
 
 function favouritePageHandler(req, res) {
@@ -106,6 +124,9 @@ function trendingPageHandler(req, res) {
 }
 
 function searchHandler(req, res) {
+  // let name = req.query.name; //task13 updated
+  // let urls = `https://api.themoviedb.org/3/search/movie?api_key=${process.env.APIKEY}&language=en-US&query=${name}`; //task13 updated
+
   let urls = `https://api.themoviedb.org/3/search/movie?api_key=${process.env.APIKEY}&language=en-US&query=spiderman&page=1&include_adult=false`;
   axios
     .get(urls)
@@ -148,6 +169,38 @@ function genreHandler(req, res) {
       errorHandler(err, req, res);
     });
 }
+
+function addMovieHandler(req, res) {
+  let movies = req.body;
+  // eslint-disable-next-line quotes
+  // console.log(movies);
+  let sql = 'INSERT INTO favmovies(title,original_title,vote_count,poster_path,overview,release_date) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *;';
+  let obj = [movies.title, movies.original_title, movies.vote_count, movies.poster_path, movies.overview, movies.release_date];
+  console.log(obj);
+
+  client
+    .query(sql, obj)
+    .then((data) => {
+      res.status(200).json(data.rows);
+    })
+    .catch((err) => {
+      errorHandler(err, req, res);
+    });
+}
+
+function getMoviesHandler(req, res) {
+  // eslint-disable-next-line quotes
+  let sql = `SELECT * FROM favmovies;`;
+  client
+    .query(sql)
+    .then((data) => {
+      res.status(200).json(data.rows);
+    })
+    .catch((err) => {
+      errorHandler(err, req, res);
+    });
+}
+
 function notFoundHandler(req, res) {
   let obj = new Error(404, 'Sorry, something went wrong,page not found error');
   res.status(404).send(obj);
@@ -161,9 +214,10 @@ function errorHandler(err, req, res) {
   res.status(500).send(errorr);
 }
 /////////////////////////// creating ip address : , for any local machine  .... 127.0.0.1 or (localhost) !!!! maybe can run multiple server at the same time; so i will specify for each sever a track number (if i am using  multiple severs)... :port 3000,5500,8080
-
-app.listen(PORT, () => {
-  console.log(`listinig to port ${PORT}`);
+client.connect().then(() => {
+  app.listen(PORT, () => {
+    console.log(`listining to port ${PORT}`);
+  });
 });
 
 //////////////////////////////////////////////////////// Task12 DEMO/////////////////////////////////////////////

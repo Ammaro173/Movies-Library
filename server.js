@@ -27,7 +27,7 @@ app.use(cors()); // use method
 
 app.use(express.json()); // to parse (parseInt (stringS!!)) the body content to JSON Format //New!!
 // var bodyParser = require('body-parser');
-// var jsonParser = bodyParser.json();
+// var jsonParser = bodyParser.json(); /// THESE ARE OLD METHODS AND THEY ARE REPLACED WITH APP.USE(EXPRESS.JSON()); //UNDEFINED!!! SHOWING
 
 const pg = require('pg'); // use pg library!!
 
@@ -45,7 +45,12 @@ app.get('/search', searchHandler);
 app.get('/genre', genreHandler);
 
 app.post('/addmovie', addMovieHandler); //task13
-app.get('/getMovies', getMoviesHandler); // Task 13
+app.get('/getmyMovies', getMoviesHandler); // Task 13
+
+//task14
+app.put('/UPDATE/:id', movieUpdateHandler); //update method YOU CAN ADD MORE THAN 1 PARAMETER!!! ID,NAME,... ::....ETC
+app.delete('/DELETE/:id', movieDeleteHandler);
+app.get('/getMovie/:id', specificMovieHandler);
 
 app.get('*', notFoundHandler); //anything except 2 above things ,show not found handler function
 app.use(errorHandler); // use not get in case of any server errors!!
@@ -169,13 +174,20 @@ function genreHandler(req, res) {
       errorHandler(err, req, res);
     });
 }
-
+//Task13
 function addMovieHandler(req, res) {
   let movies = req.body;
   // eslint-disable-next-line quotes
   // console.log(movies);
   let sql = 'INSERT INTO favmovies(title,original_title,vote_count,poster_path,overview,release_date) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *;';
-  let obj = [movies.title, movies.original_title, movies.vote_count, movies.poster_path, movies.overview, movies.release_date];
+  let obj = [
+    movies.title || '',
+    movies.original_title || '',
+    movies.vote_count || 0,
+    movies.poster_path || '',
+    movies.overview || '',
+    movies.release_date || '',
+  ]; //  || "" REMEBER HT  EMPTY STRING TRCIK!!
   console.log(obj);
 
   client
@@ -187,12 +199,65 @@ function addMovieHandler(req, res) {
       errorHandler(err, req, res);
     });
 }
-
+//Task14
 function getMoviesHandler(req, res) {
   // eslint-disable-next-line quotes
   let sql = `SELECT * FROM favmovies;`;
   client
     .query(sql)
+    .then((data) => {
+      res.status(200).json(data.rows);
+    })
+    .catch((err) => {
+      errorHandler(err, req, res);
+    });
+}
+// task14
+function movieUpdateHandler(req, res) {
+  const id = req.params.id;
+  let movies = req.body;
+  // eslint-disable-next-line quotes
+  const sql = `UPDATE favmovies SET title=$1,original_title=$2,vote_count=$3,poster_path=$4,overview=$5,release_date=6$  WHERE id=$7 RETURNING *;`; //we add the WHERE statement (confition)  //REMEBER BEST PARCTICE NOT TO HAVE ANY DATA HERE ALL $ EX ID=${....}, ALSO WRONG
+  let obj = [
+    movies.title || '',
+    movies.original_title || '',
+    movies.vote_count || 0,
+    movies.poster_path || '',
+    movies.overview || '',
+    movies.release_date || '',
+    id,
+  ];
+  client
+    .query(sql, obj)
+    .then((data) => {
+      res.status(200).json(data.rows); //204 if updated didnt return dada to client // 201 UPDATED SUCEFULLY
+    })
+    .catch((err) => {
+      errorHandler(err, req, res);
+    });
+}
+//Task14
+function movieDeleteHandler(req, res) {
+  const id = req.params.id;
+  let sql = `DELTE FROM favmovies WHERE id=${id};`; //DELETE FROM table_name WHERE CONDTION IS THE ID!!!
+  const values = [id];
+  client
+    .query(sql, values)
+    .then(() => {
+      res.status(200).send('the list has been updated'); //REMEBER SATUS 204!!!! BECAUSE NO RETURNING OR UPDATING!! if you send message status(200)!!!, if you send a message (204)!!!!
+      //or res.status(204).json({});
+    })
+    .catch((err) => {
+      errorHandler(err, req, res);
+    });
+}
+//Task14
+function specificMovieHandler(req, res) {
+  const id = req.params.id;
+  let sql = `SELECT * FROM favmovies WHERE id=$1;`;
+  let obj = [id];
+  client
+    .query(sql, obj)
     .then((data) => {
       res.status(200).json(data.rows);
     })

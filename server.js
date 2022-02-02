@@ -239,10 +239,10 @@ function movieUpdateHandler(req, res) {
 //Task14
 function movieDeleteHandler(req, res) {
   const id = req.params.id;
-  let sql = `DELTE FROM favmovies WHERE id=${id};`; //DELETE FROM table_name WHERE CONDTION IS THE ID!!!
-  const values = [id];
+  let sql = `DELTE FROM favmovies WHERE id=$1;`; //DELETE FROM table_name WHERE CONDTION IS THE ID!!!
+  const obj = [id];
   client
-    .query(sql, values)
+    .query(sql, obj)
     .then(() => {
       res.status(200).send('the list has been updated'); //REMEBER SATUS 204!!!! BECAUSE NO RETURNING OR UPDATING!! if you send message status(200)!!!, if you send a message (204)!!!!
       //or res.status(204).json({});

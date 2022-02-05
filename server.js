@@ -31,10 +31,13 @@ app.use(express.json()); // to parse (parseInt (stringS!!)) the body content to 
 
 const pg = require('pg'); // use pg library!!
 
+// for Deployment on Hiroku:
 const client = new pg.Client({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false },
 });
+
+// this might not work on server deployment!!!!!
 // const client = new pg.Client(process.env.DATABASE_URL); // Cient or db(DataBase)
 // const client = new pg.Client({
 //   connectionString: 'postgres://ammaro:0000@localhost:5432/movies',

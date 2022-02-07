@@ -224,7 +224,7 @@ function movieUpdateHandler(req, res) {
   const id = req.params.id;
   let movies = req.body;
   // eslint-disable-next-line quotes
-  const sql = `UPDATE favmovies SET title=$1,original_title=$2,vote_count=$3,poster_path=$4,overview=$5,release_date=6$  WHERE id=$7 RETURNING *;`; //we add the WHERE statement (confition)  //REMEBER BEST PARCTICE NOT TO HAVE ANY DATA HERE ALL $ EX ID=${....}, ALSO WRONG
+  const sql = `UPDATE favmovies SET title=$1,original_title=$2,vote_count=$3,poster_path=$4,overview=$5,release_date=$6  WHERE id=$7 RETURNING *;`; //we add the WHERE statement (confition)  //REMEBER BEST PARCTICE NOT TO HAVE ANY DATA HERE ALL $ EX ID=${....}, ALSO WRONG
   let obj = [
     movies.title || '',
     movies.original_title || '',
@@ -234,10 +234,11 @@ function movieUpdateHandler(req, res) {
     movies.release_date || '',
     id,
   ];
+
   client
     .query(sql, obj)
     .then((data) => {
-      res.status(200).json(data.rows); //204 if updated didnt return dada to client // 201 UPDATED SUCEFULLY
+      res.status(200).json(data.rows); //204 if updated didnt return data to client // 201 UPDATED SUCEFULLY
     })
     .catch((err) => {
       errorHandler(err, req, res);
@@ -246,6 +247,7 @@ function movieUpdateHandler(req, res) {
 //Task14
 function movieDeleteHandler(req, res) {
   const id = req.params.id;
+  // eslint-disable-next-line quotes
   let sql = `DELETE FROM favmovies WHERE id=$1;`; //DELETE FROM table_name WHERE CONDTION IS THE ID!!! was written delte!!! check syntax always!!! <<<===
   const obj = [id];
   client
@@ -261,6 +263,7 @@ function movieDeleteHandler(req, res) {
 //Task14
 function specificMovieHandler(req, res) {
   const id = req.params.id;
+  // eslint-disable-next-line quotes
   let sql = `SELECT * FROM favmovies WHERE id=$1;`;
   let obj = [id];
   client

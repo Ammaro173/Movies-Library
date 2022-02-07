@@ -246,7 +246,7 @@ function movieUpdateHandler(req, res) {
 //Task14
 function movieDeleteHandler(req, res) {
   const id = req.params.id;
-  let sql = `DELTE FROM favmovies WHERE id=$1;`; //DELETE FROM table_name WHERE CONDTION IS THE ID!!!
+  let sql = `DELETE FROM favmovies WHERE id=$1;`; //DELETE FROM table_name WHERE CONDTION IS THE ID!!! was written delte!!! check syntax always!!! <<<===
   const obj = [id];
   client
     .query(sql, obj)
